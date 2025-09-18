@@ -21,7 +21,7 @@ try {
   console.log("Rota GET / solicitada");
   res.json({
 		message: "API para _____",      // Substitua pelo conteúdo da sua API
-    author: "Seu_nome_completo",    // Substitua pelo seu nome
+    author: "iago ornelas",    // Substitua pelo seu nome
     statusBD: dbStatus
   });
 });
