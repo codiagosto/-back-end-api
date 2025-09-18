@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "trabai 14",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
