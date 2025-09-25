@@ -5,11 +5,25 @@ import express from "express";      // Requisição do pacote do express
 const app = express();              // Instancia o Express
 const port = 3000;                  // Define a porta
 
-dotenv.config();         // Carrega e processa o arquivo .env
-const { Pool } = pkg;   // Utiliza a Classe Pool do Postgres
+dotenv.config();    
+const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL     // Carrega e processa o arquivo .env
+let pool = null; // Variável para armazenar o pool de conexões com o banco de dados
+conectarBD(){
+  function conectarBD() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.URL_BD,
+    });
+  }
+  return pool;
+}
+conectarBD(){
+  const db = conectarBD(); // Cria uma nova instância do Pool para gerenciar conexões com o banco de dados
+}
+}
 app.get("/questoes", async (req, res) => {
   console.log("Rota GET /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
-  const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL
+ 
 
   const db = new Pool({
     // Cria uma nova instância do Pool para gerenciar conexões com o banco de dados
@@ -48,6 +62,7 @@ app.get("/", async (req, res) => {        // Cria endpoint na rota da raiz do pr
     author: "iago ornelas",    // Substitua pelo seu nome
     statusBD: dbStatus
   });
+
 });
 
 app.listen(port, () => {            // Um socket para "escutar" as requisições
