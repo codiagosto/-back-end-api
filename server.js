@@ -1,15 +1,17 @@
 import pkg from "pg";
 import dotenv from "dotenv";
-import express from "express";      // Requisição do pacote do express
+import express from "express"; // Requisição do pacote do express
 
-const app = express();              // Instancia o Express
-const port = 3000;                  // Define a porta
+const app = express(); // Instancia o Express
+const port = 3000; // Define a porta
 
-dotenv.config();    
-const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL     // Carrega e processa o arquivo .env
+dotenv.config();
+const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL
+
 let pool = null; // Variável para armazenar o pool de conexões com o banco de dados
-conectarBD(){
-  function conectarBD() {
+
+// Função para conectar ao banco de dados
+function conectarBD() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.URL_BD,
@@ -17,18 +19,11 @@ conectarBD(){
   }
   return pool;
 }
-conectarBD(){
-  const db = conectarBD(); // Cria uma nova instância do Pool para gerenciar conexões com o banco de dados
-}
-}
+
 app.get("/questoes", async (req, res) => {
   console.log("Rota GET /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
- 
 
-  const db = new Pool({
-    // Cria uma nova instância do Pool para gerenciar conexões com o banco de dados
-    connectionString: process.env.URL_BD, // Usa a variável de ambiente do arquivo .env para a string de conexão
-  });
+  const db = conectarBD(); // Atribui o retorno da função conectarBD()
 
   try {
     const resultado = await db.query("SELECT * FROM questoes"); // Executa a consulta SQL
@@ -42,29 +37,27 @@ app.get("/questoes", async (req, res) => {
     });
   }
 });
-app.get("/", async (req, res) => {        // Cria endpoint na rota da raiz do projeto
-  
-  
+
+app.get("/", async (req, res) => { // Cria endpoint na rota da raiz do projeto
   console.log("Rota GET / solicitada");
-  const db = new Pool({
-    connectionString: process.env.URL_BD,
-  });
+
+  const db = conectarBD(); // Atribui o retorno da função conectarBD()
 
   let dbStatus = "ok";
   try {
     console.log("Conexão com o banco de dados bem sucedida.");
-    await db.query("SELECT 1");
+    await db.query("SELECT 1"); // Verifica se a conexão está funcionando
   } catch (e) {
     dbStatus = e.message;
   }
-  res.json({
-    message: "API para _____",      // Substitua pelo conteúdo da sua API
-    author: "iago ornelas",    // Substitua pelo seu nome
-    statusBD: dbStatus
-  });
 
+  res.json({
+    message: "API para _____", // Substitua pelo conteúdo da sua API
+    author: "Iago Ornelas", // Substitua pelo seu nome
+    statusBD: dbStatus,
+  });
 });
 
-app.listen(port, () => {            // Um socket para "escutar" as requisições
-  console.log(`Serviço rodando na porta:  ${port}`);
+app.listen(port, () => { // Um socket para "escutar" as requisições
+  console.log(`Serviço rodando na porta: ${port}`);
 });
