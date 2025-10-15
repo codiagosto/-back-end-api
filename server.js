@@ -235,11 +235,11 @@ app.post("/filmes", async (req, res) => {
   try {
     const data = req.body; // Obtém os dados do corpo da requisição
     // Validação dos dados recebidos
-    if (!data.titulo || !data.genero || !data.duracao || !data.ano_lacamento || !data.classificacao || !data.criado_em) {
+    if (!data.titulo || !data.genero || !data.duracao || !data.ano_lancamento || !data.classificacao || !data.criado_em) {
       return res.status(400).json({
         erro: "Dados inválidos",
         mensagem:
-          "Todos os campos (genero,ano_lancamento,classificacao e criado em) são obrigatórios.",
+          "Todos os campos (titulo,genero,ano_lancamento,classificacao e criado em) são obrigatórios.",
       });
     }
 
@@ -304,9 +304,9 @@ app.put("/filmes/:id", async (req, res) => {
   console.log("Rota PUT /filmes solicitada"); // Log no terminal para indicar que a rota foi acessada
 
   try {
-    const id = req.params.id; // Obtém o ID da questão a partir dos parâmetros da URL
+    const id = req.params.id; // Obtém o ID da filme a partir dos parâmetros da URL
     const dbFilmes = conectarBD("filme"); // Conecta ao banco de dados
-    let consulta = "SELECT * FROM filmes WHERE id = $1"; // Consulta SQL para selecionar a questão pelo ID
+    let consulta = "SELECT * FROM filmes WHERE id = $1"; // Consulta SQL para selecionar a filme pelo ID
     let resultado = await dbFilmes.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
     let filme = resultado.rows; // Obtém as linhas retornadas pela consulta
 
@@ -318,25 +318,31 @@ app.put("/filmes/:id", async (req, res) => {
     const data = req.body; // Obtém os dados do corpo da requisição
 
     // Usa o valor enviado ou mantém o valor atual do banco
-    data.enunciado = data.enunciado || questao[0].enunciado;
-    data.disciplina = data.disciplina || questao[0].disciplina;
-    data.tema = data.tema || questao[0].tema;
-    data.nivel = data.nivel || questao[0].nivel;
+    data.titulo = data.titulo || filme[0].titulo;
+    data.genero = data.genero || filme[0].genero;
+    data.duracao = data.duracao || filme[0].duracao;
+    data.ano_lancamento = data.ano-lancamento || filme[0].ano_lancamento;
+    data.classificacao = data.classificacao || filme[0].classificacao;
+    data.criado_em = data.criado_em || filme[0].criado_em;
 
-    // Atualiza a questão
-    consulta ="UPDATE questoes SET enunciado = $1, disciplina = $2, tema = $3, nivel = $4 WHERE id = $5";
+    
+
+    // Atualiza a filme
+    consulta ="UPDATE questoes SET titulo = $1, genero = $2, duracao = $3, ano_lancamento = $4 ,classificacao = $5,criado_em =$6  WHERE id = $7";
     // Executa a consulta SQL com os valores fornecidos
     resultado = await db.query(consulta, [
-      data.enunciado,
-      data.disciplina,
-      data.tema,
-      data.nivel,
+      data.titulo,
+      data.genero,
+      data.duracao,
+      data.ano_lancamento,
+      data.classificacao,
+      data.criado_em,
       id,
     ]);
 
-    res.status(200).json({ message: "Questão atualizada com sucesso!" }); // Retorna o resultado da consulta como JSON
+    res.status(200).json({ message: "filme atualizada com sucesso!" }); // Retorna o resultado da consulta como JSON
   } catch (e) {
-    console.error("Erro ao atualizar questão:", e); // Log do erro no servidor
+    console.error("Erro ao atualizar filme:", e); // Log do erro no servidor
     res.status(500).json({
       erro: "Erro interno do servidor",
     });
