@@ -1,7 +1,6 @@
 import pkg from "pg";
 import dotenv from "dotenv";
 import express from "express"; // Requisição do pacote do express
-import { conectarBD } from "./db.js";
 
 const app = express(); // Instancia o Express
 const port = 3000; // Define a porta
@@ -13,20 +12,13 @@ const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar co
 let pool = null; // Variável para armazenar o pool de conexões com o banco de dados
 
 // Função para conectar ao banco de dados
-export function conectarBD(tipo = "principal") {
-  if (!pools[tipo]) {
-    const urls = {
-      principal: process.env.URL_BD,
-      filme: process.env.URL_FILME_BD,
-    };
-
-    if (!urls[tipo]) throw new Error(`URL do banco "${tipo}" não configurada no .env`);
-
-    pools[tipo] = new Pool({ connectionString: urls[tipo] });
-    console.log(`✅ Conectado ao banco: ${tipo}`);
+function conectarBD() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.URL_BD,
+    });
   }
-
-  return pools[tipo];
+  return pool;
 }
 
 app.get("/questoes", async (req, res) => {
@@ -47,16 +39,16 @@ app.get("/questoes", async (req, res) => {
   }
 });
 app.get("/filmes", async (req, res) => {
-  console.log("Rota GET /filmes solicitada"); // Log no terminal para indicar que a rota foi acessada
+  console.log("Rota GET /filmes solicitada");
 
-  const dbFilme = conectarBD("filme"); // Banco de filmes
+  const db = conectarBD();
 
   try {
-    const resultado = await dbFilme.query("SELECT * FROM filmes"); // Executa a consulta SQL
-    const dados = resultado.rows; // Obtém as linhas retornadas
-    res.json(dados); // Retorna como JSON
+    const resultado = await db.query("SELECT * FROM filmes");
+    const dados = resultado.rows;
+    res.json(dados);
   } catch (e) {
-    console.error("Erro ao buscar filmes:", e); // Log do erro
+    console.error("Erro ao buscar filmes:", e);
     res.status(500).json({
       erro: "Erro interno do servidor",
       mensagem: "Não foi possível buscar os filmes",
@@ -66,35 +58,32 @@ app.get("/filmes", async (req, res) => {
 
 
 app.get("/", async (req, res) => {
-  console.log("Rota GET /teste-bancos solicitada");
+  // Rota raiz do servidor
+  // Rota GET /
+  // Esta rota é chamada quando o usuário acessa a raiz do servidor
+  // Ela retorna uma mensagem de boas-vindas e o status da conexão com o banco de dados
+  // Cria a rota da raiz do projeto
 
-  const dbPrincipal = conectarBD(); // Banco que tava
-  const dbFilme = conectarBD("filme"); // Banco de filmes
+  console.log("Rota GET / solicitada"); // Log no terminal para indicar que a rota foi acessada
 
-  let statusPrincipal = "ok";
-  let statusFilme = "ok";
 
+  const db = conectarBD();
+
+  let dbStatus = "ok";
+
+  // Tenta executar uma consulta simples para verificar a conexão com o banco de dados
+  // Se a consulta falhar, captura o erro e define o status do banco de dados como a mensagem de erro
   try {
-    await dbPrincipal.query("SELECT 1");
-    console.log("Conexão com banco teste: OK");
+    await db.query("SELECT 1");
   } catch (e) {
-    statusPrincipal = e.message;
+    dbStatus = e.message;
   }
 
-  try {
-    await dbFilme.query("SELECT 1");
-    console.log("Conexão com banco de filmes: OK");
-  } catch (e) {
-    statusFilme = e.message;
-  }
-
+  // Responde com um JSON contendo uma mensagem, o nome do autor e o status da conexão com o banco de dados
   res.json({
-    message: "API para teste de BDs ", // Substitua pelo conteúdo da sua API
-    author: "Iago Ornelas", // Substitua pelo seu nome
-    status: {
-      principal: statusPrincipal,
-      filme: statusFilme,
-    },
+    mensagem: "API para Questões de Prova e filmes", // Substitua pelo conteúdo da sua API
+    autor: "iago", // Substitua pelo seu nome
+    dbStatus: dbStatus,
   });
 });
 
@@ -108,9 +97,9 @@ app.get("/filmes/:id", async (req, res) => {
 
   try {
     const id = req.params.id; // Obtém o ID da filme a partir dos parâmetros da URL
-    const dbFilme = conectarBD("filme"); // Banco de filmes
+    const db = conectarBD();
     const consulta = "SELECT * FROM filmes WHERE id = $1"; // Consulta SQL para selecionar a questão pelo ID
-    const resultado = await dbFilme.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
+    const resultado = await db.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
     const dados = resultado.rows; // Obtém as linhas retornadas pela consulta
 
     // Verifica se a filmes foi encontrada
@@ -180,9 +169,9 @@ app.delete("/filmes/:id", async (req, res) => {
 
   try {
     const id = req.params.id; // Obtém o ID da filme a partir dos parâmetros da URL
-    const dbFilme = conectarBD("filme"); // Banco de filmes
-    let consulta = "SELECT * FROM questoes WHERE id = $1"; // Consulta SQL para selecionar a filmes pelo ID
-    let resultado = await dbFilme.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
+    const db = conectarBD();
+    let consulta = "SELECT * FROM filmes WHERE id = $1"; // Consulta SQL para selecionar a filmes pelo ID
+    let resultado = await db.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
     let dados = resultado.rows; // Obtém as linhas retornadas pela consulta
 
     // Verifica se a filmes foi encontrada
@@ -243,7 +232,7 @@ app.post("/filmes", async (req, res) => {
       });
     }
 
-    const dbFilmes = conectarBD("filmes"); // Conecta ao banco de dados
+    const db = conectarBD();
 
     const consulta =
       "INSERT INTO filmes (titulo,genero,duracao,ano_lancamento,classificacao,criado_em) VALUES ($1,$2,$3,$4,$5,$6) "; // Consulta SQL para inserir a questão
@@ -305,9 +294,9 @@ app.put("/filmes/:id", async (req, res) => {
 
   try {
     const id = req.params.id; // Obtém o ID da filme a partir dos parâmetros da URL
-    const dbFilmes = conectarBD("filme"); // Conecta ao banco de dados
+    const db = conectarBD();
     let consulta = "SELECT * FROM filmes WHERE id = $1"; // Consulta SQL para selecionar a filme pelo ID
-    let resultado = await dbFilmes.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
+    let resultado = await db.query(consulta, [id]); // Executa a consulta SQL com o ID fornecido
     let filme = resultado.rows; // Obtém as linhas retornadas pela consulta
 
     // Verifica se a questão foi encontrada
@@ -321,14 +310,14 @@ app.put("/filmes/:id", async (req, res) => {
     data.titulo = data.titulo || filme[0].titulo;
     data.genero = data.genero || filme[0].genero;
     data.duracao = data.duracao || filme[0].duracao;
-    data.ano_lancamento = data.ano-lancamento || filme[0].ano_lancamento;
+    data.ano_lancamento = data.ano_lancamento || filme[0].ano_lancamento;
     data.classificacao = data.classificacao || filme[0].classificacao;
     data.criado_em = data.criado_em || filme[0].criado_em;
 
     
 
     // Atualiza a filme
-    consulta ="UPDATE questoes SET titulo = $1, genero = $2, duracao = $3, ano_lancamento = $4 ,classificacao = $5,criado_em =$6  WHERE id = $7";
+    consulta ="UPDATE filmes SET titulo = $1, genero = $2, duracao = $3, ano_lancamento = $4 ,classificacao = $5,criado_em =$6  WHERE id = $7";
     // Executa a consulta SQL com os valores fornecidos
     resultado = await db.query(consulta, [
       data.titulo,
