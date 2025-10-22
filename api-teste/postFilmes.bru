@@ -1,0 +1,28 @@
+meta {
+  name: postFilmes
+  type: http
+  seq: 12
+}
+
+post {
+  url: https://back-end-api-xi.vercel.app/filmes
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "titulo": "Interestelar",
+    "genero": "Ficção Científica",
+    "duracao": 169,
+    "ano_lancamento": 2014,
+    "classificacao": "12",
+    "criado_em" :"2025-10-22T12:00:00-03:00"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

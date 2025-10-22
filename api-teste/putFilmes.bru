@@ -1,0 +1,28 @@
+meta {
+  name: putFilmes
+  type: http
+  seq: 14
+}
+
+put {
+  url: https://back-end-api-xi.vercel.app/filmes/3
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "titulo": "Tropa de Elite 2",
+    "genero": "Ação",
+    "duracao": 118,
+    "ano_lancamento": 2010,
+    "classificacao": "16",
+    "criado_em": "2025-10-22 12:45:00"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
